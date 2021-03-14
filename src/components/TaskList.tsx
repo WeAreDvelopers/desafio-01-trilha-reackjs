@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import '../styles/tasklist.scss'
 
@@ -9,27 +9,57 @@ interface Task {
   title: string;
   isComplete: boolean;
 }
-
+interface Feitas {
+  totalFeitas : number;
+  totalTarefas : number;
+}
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [feitas, setFeitas] = useState<Feitas>([]);
 
   function handleCreateNewTask() {
     // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+   if(newTaskTitle !== ""){
+    setTasks([
+      ...tasks,
+      {
+        id: Math.random(),
+        title: newTaskTitle,
+        isComplete: false,
+      },
+    ]);
+    setNewTaskTitle('');
   }
+  }
+  useEffect(()=>{
+    const filtered = tasks.filter(task => task.isComplete);
+    document.title = `Tarefas completadas ${filtered.length}`;
+    setFeitas({totalFeitas:filtered.length, totalTarefas:tasks.length})
+  },[tasks]);
 
   function handleToggleTaskCompletion(id: number) {
     // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
+
+    const newTaskCompletion = tasks.map(task =>{
+      return task.id === id ? {...task,isComplete:!task.isComplete} : task;
+    });
+    setTasks(newTaskCompletion)
   }
 
   function handleRemoveTask(id: number) {
     // Remova uma task da listagem pelo ID
+  
+    let remove = tasks.filter( task => task.id !== id ); 
+    setTasks(remove)
+
   }
 
   return (
     <section className="task-list container">
       <header>
         <h2>Minhas tasks</h2>
+        <h3>{feitas.totalFeitas}/{feitas.totalTarefas}</h3>
 
         <div className="input-group">
           <input 
